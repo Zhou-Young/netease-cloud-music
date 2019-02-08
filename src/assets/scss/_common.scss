@@ -1,0 +1,130 @@
+@charset "UTF-8";
+
+//重置样式
+img {
+  border: none;
+  display: block;
+}
+
+p {
+  word-wrap: break-word;
+  word-break: normal;
+  word-break: break-all;
+}
+
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: " ";
+}
+
+.clearfix:after {
+  clear: both;
+}
+
+.clearfix {
+  *zoom: 1; //兼容ie67
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased; //字体平滑
+}
+
+body,
+html {
+  height: 100%;
+  width: 100%;
+  font-size: 14px;
+  // line-height: 1;
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+p,
+blockquote,
+dl,
+dd,
+ul,
+ol,
+li,
+pre,
+fieldset,
+button,
+input,
+textarea,
+th,
+td {
+  margin: 0;
+  padding: 0;
+}
+
+input,
+button,
+select,
+textarea {
+  outline: none;
+}
+
+a {
+  background: transparent;
+  text-decoration: none;
+
+  &:active {
+    outline: 0;
+  }
+}
+
+.ic {
+  font-size: 10px;
+}
+
+h1 {
+  font-size: 24px;
+}
+
+h2 {
+  font-size: 18px;
+}
+
+h3 {
+  font-size: 16px;
+}
+
+p,
+span {
+  font-size: 14px;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+
+@mixin ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.red {
+  color: red;
+}
+
+.gray {
+  background-color: gray !important;
+}
