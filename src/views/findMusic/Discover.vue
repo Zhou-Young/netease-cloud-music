@@ -1,7 +1,6 @@
 <template>
   <div class="discover">
-    <h1>This is an discover page</h1>
-    <Carousel msg="Welcome to Your Vue.js + TypeScript App"/>
+    <Carousel/>
   </div>
 </template>
 <script lang="ts">

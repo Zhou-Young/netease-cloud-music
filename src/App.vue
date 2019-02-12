@@ -23,20 +23,79 @@
             <router-link to="/download">下载客户端</router-link>
           </li>
         </ul>
-        <span class="login">登录</span>
+        <span class="login" v-if="log===false" v-on:click="showModal">登录</span>
+        <div class="loging" v-if="log===true">
+          <img :src="avatarUrl" @click="showlogout" class="avatar">
+          <div @click="logout" class="logout">退出</div>
+        </div>
         <input class="search" placeholder="搜索">
       </div>
     </div>
     <router-view/>
+    <Login v-if="modal === 'login'" v-on:close="close" v-on:login="login"/>
   </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { Component, Vue } from 'vue-property-decorator';
+import Login from '@/components/Login.vue'; // @ is an alias to /src
+import axios from 'axios';
+
 export default Vue.extend({
+  components: {
+    Login,
+  },
+  data() {
+    return {
+      modal: '',
+      log: true,
+      showOut: false,
+      avatarUrl:
+        'http://img5.imgtn.bdimg.com/it/u=1248132760,1946083297&fm=26&gp=0.jpg',
+    };
+  },
+  created() {
+    axios.get('http://localhost:3000/login/status').then(({ data }) => {
+      if (!!data.avatarUrl) {
+        this.log = true;
+        this.avatarUrl = data.avatarUrl;
+      }
+    });
+  },
   watch: {
     $route(to, from) {
       // 对路由变化作出响应...
+    },
+  },
+  methods: {
+    showModal() {
+      // `this` 在方法里指向当前 Vue 实例
+      this.modal = 'login';
+    },
+    close() {
+      this.modal = '';
+    },
+    login(phone: string, password: string) {
+      axios
+        .get(
+          'http://localhost:3000/login/cellphone?phone=' +
+            phone +
+            '&password=' +
+            password,
+        )
+        .then(({ data }) => {
+          this.modal = '';
+          this.log = true;
+          this.avatarUrl = data.profile.avatarUrl;
+        });
+    },
+    logout() {
+      axios.get('http://localhost:3000/logout').then(() => {
+        this.log = false;
+      });
+    },
+    showlogout() {
+      this.showOut = true;
     },
   },
 });
@@ -50,6 +109,7 @@ export default Vue.extend({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  min-width: 1200px;
 }
 #nav {
   position: relative;
@@ -104,6 +164,33 @@ export default Vue.extend({
       float: right;
       color: #ffffff;
       line-height: 70px;
+      cursor: pointer;
+    }
+    .loging {
+      float: right;
+      position: relative;
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin: 15px;
+        cursor: pointer;
+      }
+      &:hover .logout {
+        display: block;
+      }
+      .logout {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: -20px;
+        width: 80px;
+        height: 30px;
+        background-color: #242424;
+        color: #ffffff;
+        line-height: 30px;
+        cursor: pointer;
+      }
     }
     .search {
       float: right;

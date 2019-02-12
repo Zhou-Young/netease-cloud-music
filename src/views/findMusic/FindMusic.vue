@@ -62,7 +62,7 @@ export default class FindMusic extends Vue {}
     margin: 0 auto;
     .nav-ul {
       float: left;
-      margin-left: 174px;
+      margin-left: 164px;
       .nav-li {
         float: left;
         list-style: none;

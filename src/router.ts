@@ -10,7 +10,7 @@ export default new Router( {
   routes: [
     {
       path: '/',
-      redirect: '/findMusic/discover'
+      redirect: '/findMusic/discover',
     },
     {
       path: '/findMusic',
