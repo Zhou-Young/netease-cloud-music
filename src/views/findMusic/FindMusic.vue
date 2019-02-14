@@ -42,7 +42,7 @@ export default class FindMusic extends Vue {}
 </script>
 
 
-<style lang="scss">
+<style scoped lang="scss">
 @import '../../assets/scss/common.scss';
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
