@@ -33,17 +33,26 @@
     </div>
     <router-view/>
     <Login v-if="modal === 'login'" v-on:close="close" v-on:login="login"/>
+    <AudioBottom :id="id"/>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import Login from '@/components/Login.vue'; // @ is an alias to /src
+import AudioBottom from '@/components/AudioBottom.vue';
 import axios from 'axios';
+import store from './store';
 
 export default Vue.extend({
   components: {
     Login,
+    AudioBottom,
+  },
+  computed: {
+    id() {
+      return store.state.id;
+    },
   },
   data() {
     return {
@@ -55,6 +64,7 @@ export default Vue.extend({
     };
   },
   created() {
+    sessionStorage.setItem('id', '507815173');
     axios.get('http://localhost:3000/login/status').then(({ data }) => {
       if (!!data.avatarUrl) {
         this.log = true;
@@ -107,7 +117,7 @@ export default Vue.extend({
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  // text-align: center;
   color: #2c3e50;
   min-width: 1200px;
 }

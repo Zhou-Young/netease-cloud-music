@@ -7,21 +7,18 @@
         <i class="iconfont icon-yduixiayiqu next"/>
       </div>
       <div class="content clearfix">
-        <img
-          class="coverImg"
-          src="http://p2.music.126.net/hDo0S_gPxpNaPJXE98fS8w==/109951163826485303.jpg"
-        >
+        <img :src="musicInfo.al.picUrl" class="coverImg">
         <div class="content-right">
           <div class="info">
-            <span class="title">歌名</span>
-            <span class="author">作者</span>
+            <span class="title">{{musicInfo.name}}</span>
+            <span class="author">{{musicInfo.ar[0].name}}</span>
           </div>
           <div>
-            <div class="bar">
+            <div @click="clickBar" class="bar" ref="bar">
               <div :style="{width:width}" class="pre"></div>
               <div :style="{left:width}" @mousedown="dotDrop" class="dot" ref="dot"></div>
             </div>
-            <span>2:11/3:30</span>
+            <span>{{currentTime}}/{{totalTime}}</span>
           </div>
         </div>
       </div>
@@ -33,49 +30,160 @@
         <i class="iconfont icon-mulu"/>
       </div>
     </div>
-    <audio ref="music">
-      <source src="https://music.163.com/song/media/outer/url?id=445546453.mp3" type="audio/mpeg">
-    </audio>
+    <audio :src="'https://music.163.com/song/media/outer/url?id='+id+'.mp3'" ref="music"></audio>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Model, Emit } from 'vue-property-decorator';
+import {
+  Component,
+  Prop,
+  Vue,
+  Model,
+  Emit,
+  Watch,
+} from 'vue-property-decorator';
+import axios from 'axios';
+import * as utils from '@/utils/utils';
+import store from '@/store';
 
 @Component
 export default class AudioBottom extends Vue {
   private iconPlay = 'icon-iconset0481';
   private isDrag = false;
-  private width = '30%';
-  @Prop() private playCount!: number;
-  @Prop() private coverImgUrl!: string;
-  @Prop() private name!: string;
+  private wid = 0;
+  private width = this.wid + '%';
+  private currentX = 0;
+  private musicInfo = {};
+  private totalTime = '0:00';
+  private currentTime = '0:00';
+  private Timer: any = {};
+  private seconds = 0;
+  private isplay = false;
+  private musicUrl =
+    'https://music.163.com/song/media/outer/url?id=507815173.mp3';
+  // @Prop() private playCount!: number;
+  // @Prop() private coverImgUrl!: string;
+  // @Prop() private name!: string;
   @Prop() private id!: string;
+  @Watch('wid')
+  private onWidChange(val: number, oldVal: number) {
+    if (val > 100) {
+      this.wid = 100;
+      clearInterval(this.Timer);
+      this.iconPlay = 'icon-iconset0481';
+    } else if (val < 0) {
+      this.wid = 0;
+      this.seconds = 0;
+    }
+    this.width = this.wid + '%';
+  }
+  @Watch('id')
+  private onIdChange(val: string, oldVal: string) {
+    clearInterval(this.Timer);
+    axios
+      .get('http://localhost:3000/song/detail?ids=' + val)
+      .then(({ data }) => {
+        this.musicInfo = data.songs[0];
+        const audio: any = this.$refs.music;
+        // console.log(audio);
+        this.totalTime = utils.formatSeconds(audio.duration);
+        this.seconds = 0;
+        this.currentTime = utils.formatSeconds(this.seconds);
+        this.wid = 0;
+        this.width = this.wid + '%';
+        audio.currentTime = this.seconds;
+        audio.play();
+        this.iconPlay = 'icon-zanting1';
+        this.Timer = setInterval(() => {
+          this.seconds = this.seconds + 1;
+          this.currentTime = utils.formatSeconds(this.seconds);
+          this.wid = 100 / audio.duration + this.wid;
+          this.width = this.wid + '%';
+        }, 1000);
+      });
+    // axios.get('http://localhost:3000/song/url?id=' + val).then(({ data }) => {
+    //   this.musicUrl = data.data[0].url;
+    //   console.log(this.musicUrl);
+    // });
+  }
   private created() {
     const dot: any = this.$refs.dot;
-    document.onmousemove = () => {
-      if (this.isDrag == true) {
-        console.log('???');
-        // this.width = 70;
+    axios
+      .get('http://localhost:3000/song/detail?ids=' + this.id)
+      .then(({ data }) => {
+        this.musicInfo = data.songs[0];
+      });
+    document.onmousemove = e => {
+      if (this.isDrag === true) {
+        if ((e.clientX - this.currentX) / 490 + this.wid > 100) {
+          this.wid = 100;
+        } else if ((e.clientX - this.currentX) / 490 + this.wid < 0) {
+          this.wid = 0;
+        } else {
+          this.wid = (e.clientX - this.currentX) / 490 + this.wid;
+        }
       }
+      this.width = this.wid + '%';
     };
     document.onmouseup = () => {
-      this.isDrag = false;
+      if (this.isDrag === true) {
+        this.isDrag = false;
+        const audio: any = this.$refs.music;
+        this.seconds = Math.round((audio.duration * this.wid) / 100);
+        this.currentTime = utils.formatSeconds(this.seconds);
+        audio.currentTime = this.seconds;
+        audio.play();
+      }
     };
   }
-  private dotDrop() {
+  private dotDrop(event: any) {
     this.isDrag = true;
-    console.log('..');
+    this.currentX = event.clientX;
   }
   private playMusic() {
     const audio: any = this.$refs.music;
-
+    this.totalTime = utils.formatSeconds(audio.duration);
     if (this.iconPlay === 'icon-iconset0481') {
+      if (this.wid === 100) {
+        this.seconds = 0;
+        this.currentTime = utils.formatSeconds(this.seconds);
+        this.wid = 0;
+        this.width = this.wid + '%';
+        audio.currentTime = this.seconds;
+      }
       audio.play();
       this.iconPlay = 'icon-zanting1';
+      this.Timer = setInterval(() => {
+        this.seconds = this.seconds + 1;
+        this.currentTime = utils.formatSeconds(this.seconds);
+        this.wid = 100 / audio.duration + this.wid;
+        this.width = this.wid + '%';
+      }, 1000);
     } else {
       audio.pause();
       this.iconPlay = 'icon-iconset0481';
+      clearInterval(this.Timer);
+    }
+  }
+  private clickBar(event: any) {
+    const bar: any = this.$refs.bar;
+    const audio: any = this.$refs.music;
+    this.wid = ((event.clientX - bar.getBoundingClientRect().left) * 100) / 490;
+    this.width = this.wid + '%';
+    this.seconds = Math.round((audio.duration * this.wid) / 100);
+    this.currentTime = utils.formatSeconds(this.seconds);
+    audio.currentTime = this.seconds;
+    audio.play();
+    if (this.iconPlay === 'icon-iconset0481') {
+      this.iconPlay = 'icon-zanting1';
+      this.totalTime = utils.formatSeconds(audio.duration);
+      this.Timer = setInterval(() => {
+        this.seconds = this.seconds + 1;
+        this.currentTime = utils.formatSeconds(this.seconds);
+        this.wid = 100 / audio.duration + this.wid;
+        this.width = this.wid + '%';
+      }, 1000);
     }
   }
 }
@@ -138,7 +246,7 @@ export default class AudioBottom extends Vue {
         border-radius: 5px;
         background-color: #333333;
         float: left;
-        margin-right: 5px;
+        margin-right: 15px;
         position: relative;
         .pre {
           // width: 100px;
@@ -154,7 +262,8 @@ export default class AudioBottom extends Vue {
           position: absolute;
           // left: 90px;
           top: -3px;
-          margin-left: -10px;
+          margin-left: -5px;
+          background-color: #cc2200;
         }
       }
     }

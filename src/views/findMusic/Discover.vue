@@ -24,7 +24,6 @@
           />
         </div>
       </div>
-      <AudioBottom/>
     </div>
   </div>
 </template>
